@@ -43,11 +43,13 @@ public:
 
     QWidget *m_pTabHeader, *m_pTabData;
 
+    int num_line;// 加载数据的时候判断累计线号
+
     int m_nTraceHeaderByteValue;
     int m_nCurrentEndianType;
 
     int m_nGeophones; //检波器个数
-    int m_nTotalTraceNum;
+    int  m_nTotalTraceNum;
     int m_nTraceLen;
     int m_nCurrentTraceNum;
 
