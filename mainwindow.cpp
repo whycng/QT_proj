@@ -327,29 +327,8 @@ void MainWindow::prettify_button(QPushButton* button, QIcon icon){
 }
 
 void MainWindow::init_icon(){
-    QString t = "E:/Proj/QtProj/shiyouT/icon/";// 图标文件夹的路径,修改为相对路径 --tmp
-
-    /*
-    QString styleSheet = "\
-        QPushButton {\
-            text-align: center;\
-    }\
-\
-        QPushButton::icon {\
-            subcontrol-origin: padding;\
-            subcontrol-position: top center;\
-            padding-bottom: 5px;\
-    }";*/
-
-    /* //加载样式表
-    QString styleSheet;
-    QFile file("E:\\Proj\\QtProj\\shiyouT\\res\\styles.qss");  // 替换为你的样式表文件路径
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        QTextStream stream(&file);
-        styleSheet = stream.readAll();
-        file.close();
-    }*/
+    //QString t = "E:/Proj/QtProj/shiyouT/icon/";// 图标文件夹的路径,修改为相对路径 --tmp
+    QString t = "../shiyouT/icon/";
 
 // 原
 //    QIcon icon(t + "back.png");
@@ -359,68 +338,6 @@ void MainWindow::init_icon(){
     QIcon icon(iconPath);
     prettify_button(ui->pushButton_back,icon);// 下面操作用函数代替
 
-    /*
-    QPushButton* button = ui->pushButton_back;
-    button->setStyleSheet("QPushButton {"
-                          "text-align: center;"
-                          "background-color: transparent;"
-                          "border: none;"
-                          "}"
-                          "QPushButton::indicator {"
-                          "width: 0; height: 0;"
-                          "}");
-
-    QLabel* label = new QLabel(button);
-    label->setPixmap(icon.pixmap(QSize(32, 32)));  // 调整图标的大小
-    label->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
-
-    QVBoxLayout* layout = new QVBoxLayout(button);
-    layout->setContentsMargins(0, 0, 0, 0);  // 去除布局的边距
-    layout->addWidget(label);
-    layout->addWidget(button, 1, Qt::AlignHCenter | Qt::AlignTop);  // 使用布局中的剩余空间来放置按钮
-
-    button->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);  // 设置按钮的大小策略为在垂直方向上尽量小
-
-    // 可选：调整按钮的最小尺寸
-    button->setMinimumSize(QSize(80, 80));  // 根据需要设置最小尺寸
-
-    // button->setText("Button Text");
-
-    // 根据需要进行其他按钮属性的设置 */
-
-
-    /*
-    QString iconPath = t + "back.png";
-    QIcon icon(iconPath);
-
-    QPushButton* button = ui->pushButton_back;
-    QLabel* label = new QLabel(button);
-    label->setPixmap(icon.pixmap(button->iconSize()));
-    label->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
-
-    QVBoxLayout* layout = new QVBoxLayout(button);
-    layout->addWidget(label);
-    layout->addWidget(button);
-    layout->setAlignment(Qt::AlignCenter);*/
-
-    //ui->pushButton_back->setStyleSheet(styleSheet);
-
-    /*
-//    // 将按钮的布局设置为垂直布局
-//    QVBoxLayout *layout = new QVBoxLayout;
-//    ui->pushButton_back->setLayout(layout);
-
-//    QString iconPath = t + "back.png";
-
-//    // 设置按钮的样式表，将 URL 部分替换为 iconPath
-//    QString styleSheet = "QPushButton {"
-//                         "    background-image: url(" + iconPath + ");"
-//                                      "    background-repeat: no-repeat;"
-//                                      "    background-position: center top;"  // 将图标居中放置于按钮顶部
-//                                      "    padding-top: 32px;"  // 调整图标与文字之间的间距
-//                                      "    min-width: 100px;"  // 设置按钮的最小宽度
-//                                      "}";
-//    ui->pushButton_back->setStyleSheet(styleSheet); */
 
     icon = QIcon(t + "forward2.png");
     prettify_button(ui->pushButton_next,icon);
@@ -1011,6 +928,7 @@ void MainWindow::waveP(){
 
     QTime timedebuge;//声明一个时钟对象
     timedebuge.start();//开始计时
+    auto start = std::chrono::high_resolution_clock::now();// 另一个计时方法
 
 
     //int rectY; //放大缩小矩形框纵坐标大小
@@ -1019,9 +937,8 @@ void MainWindow::waveP(){
     double m_TempValue;
     double m_TempValueBackup;
 
-    QVector<double> m_TempData;
-    QVector<double> vectorX3c;
-    QVector<double> m_TempDataBackup;
+    QVector<double> vectorX3c(m_nTraceLen);
+    QVector<double> m_TempDataBackup(m_nTraceLen);
     std::vector<double> wave_amplitudes;// 替代m_TempDataBackup
 
     // 绘制前清除
@@ -1047,17 +964,32 @@ void MainWindow::waveP(){
             m_TempValue=(*m_Traces[i])[k];
             // qDebug() << "[M]" << i << "--"<< k << ",m_TempValue:" << m_TempValue;
             m_TempValue=m_nScale*m_TempValue;  //显示波形的幅度
-            m_TempValue=1+i+m_TempValue;
+            m_TempValue=1+i+m_TempValue; // 偏移
             m_TempDataBackup<<m_TempValue;
-            wave_amplitudes.emplace_back(m_TempValue);
+            // wave_amplitudes.emplace_back(m_TempValue);
             //m_TempDataBackup << 1 + i;
         }
 
-        //qDebug() << m_TempDataBackup;
-        QwtPlotCurve *curve = new QwtPlotCurve();
+        draw_mode=3;
+        switch (draw_mode){
+        case 1:{// 正填充
+            break;
+        }
+        case 2:{// 负填充
+            break;
+        }
+        case 3:{// 不填充
+            QwtPlotCurve *curve = new QwtPlotCurve();
 
-        curve->setSamples(m_TempDataBackup,vectorX3c);// x轴  y轴数据，坐标
-        curve->attach(ui->qwtPlot);
+            curve->setSamples(m_TempDataBackup,vectorX3c);// x轴  y轴数据，坐标
+            curve->attach(ui->qwtPlot);
+            break;
+        }
+        default:
+            break;
+        }
+        //qDebug() << m_TempDataBackup;
+
 
 //        qDebug() << "[Message]m_TempDataBackup[0]:" << m_TempDataBackup.at(0)
 //                 << ",wave_amplitudes[0]:" << wave_amplitudes[0];
@@ -1073,30 +1005,6 @@ void MainWindow::waveP(){
     fun_for_zommer();
 
 
-//    for(int i=0; i<10; i++)
-//    {
-//        // 创建curve对象
-//        QwtPlotCurve *curve = new QwtPlotCurve();
-
-//        int N=100;
-//        // 准备样本点
-//        QVector<double> x(N), y(N);
-//        for(int j=0; j<N; j++)
-//        {
-//            x[j] = j;
-//            y[j] = sin(j+i); // 每条曲线函数值不同
-//    }
-
-//        // 设置曲线样本点
-//        curve->setSamples(x, y);
-
-//        // 设置样式区分多条曲线
-//        curve->setPen(QColor(qRgb(255,0,i*25)));
-
-//        // 添加到Plot
-//        curve->attach(ui->qwtPlot);
-//    }
-
     // 设置 x 轴和 y 轴范围
     ui->qwtPlot->setAxisScale(QwtPlot::xBottom, double(trace_first), double(trace_first) + double(x_size));
     ui->qwtPlot->setAxisScale(QwtPlot::yLeft, 0.0, m_nTraceLen);
@@ -1106,7 +1014,16 @@ void MainWindow::waveP(){
     // 重新绘制图形
     ui->qwtPlot->replot();
 
+    // 清理数据
     // clearData(); 数据还能用到
+
+    // 计时
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    double elapsed = duration.count() * 1e-6; // microseconds to seconds
+    QString elapsed_str = QString::number(elapsed, 'f', 5); // 精确到5位小数
+
+    qDebug() << "[Message]<waveP()><绘图>Elapsed time:" << elapsed_str << " seconds";
     qDebug()<<"[Message]<waveP()>程序耗时："<<timedebuge.elapsed()/1000.0<<"s";//输出计时
 }
 
