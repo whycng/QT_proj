@@ -1,4 +1,5 @@
 QT       += core gui
+QT += charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -19,6 +20,7 @@ SOURCES += \
     icontextbutton.cpp \
     main.cpp \
     mainwindow.cpp \
+    src/testExample/testQChart.cpp \
     util.cpp \
     zoomer.cpp
 
@@ -27,6 +29,7 @@ HEADERS += \
     csegyread.h \
     icontextbutton.h \
     mainwindow.h \
+    src/testExample/testQChart.h \
     util.h
 
 FORMS += \

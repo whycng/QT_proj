@@ -335,9 +335,19 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // 测试窗口
+    // 主窗口
     MainWindow w;
+    QRect screenGeometry = QApplication::primaryScreen()->availableGeometry();
+    w.resize(screenGeometry.width(), screenGeometry.height());
+    w.setWindowState(Qt::WindowMaximized);
     w.show();
+
+
+    // 测试 curve
+//    QVector<double> x_data = {1,2,3,7,8,9,   7,  1};
+//    QVector<double> y_data = {1,3,1,0.5,3,2, 0.5,1 };
+//    test_PLotCurve(y_data, x_data);
+
 
     qDebug() << "main over--";
     return a.exec();

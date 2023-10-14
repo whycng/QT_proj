@@ -23,6 +23,10 @@
 #include "Zoomer.h"
 #include <QVBoxLayout>
 #include <QRadioButton>
+
+#include <QtCharts/QAreaSeries>
+#include "src/testExample/testQChart.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -34,6 +38,13 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+
+    QwtPlotCurve *curve_tp;
+
+    QtCharts::QChart *chart;
+    QtCharts::QChartView *chartView;
+
 
     // qwt
     CSegyRead m_segy;
