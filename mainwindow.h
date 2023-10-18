@@ -40,10 +40,11 @@ public:
     ~MainWindow();
 
 
-    QwtPlotCurve *curve_tp;
+    QwtPlotCurve *curve_tp;//用于绘图 curve
+    QwtPlotCurve *curve_tp2;
 
-    QtCharts::QChart *chart;
-    QtCharts::QChartView *chartView;
+//    QtCharts::QChart *chart;
+//    QtCharts::QChartView *chartView;
 
 
     // qwt

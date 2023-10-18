@@ -348,6 +348,12 @@ int main(int argc, char *argv[])
 //    QVector<double> y_data = {1,3,1,0.5,3,2, 0.5,1 };
 //    test_PLotCurve(y_data, x_data);
 
+    //测试变密度
+    //test_plot_density();
+//    GLWidget widget;
+//    widget.resize(1000, 700);
+//    widget.show();
+
 
     qDebug() << "main over--";
     return a.exec();

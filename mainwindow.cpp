@@ -41,8 +41,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     qDebug() << "after update: " << ui->comboBox->currentText();
 
-    chart = new QtCharts::QChart;
-    chartView = new QtCharts::QChartView(chart);
 
 
 }
@@ -57,7 +55,8 @@ MainWindow::~MainWindow()
 // 布局处理
 void MainWindow::layout_process(){
     // 布局处理
-    QPushButton *btns[13] = {ui->pushButton_chooseFile, ui->pushButton_add, ui->pushButton_minus,
+    int num_btn = 12;
+    QPushButton *btns[12] = {ui->pushButton_chooseFile, ui->pushButton_add, ui->pushButton_minus,
                              ui->pushButton_originalSize, /*ui->pushButton_color,*/ ui->pushButton_image,
                              ui->pushButton_first,ui->pushButton_back,ui->pushButton_next,
                              ui->pushButton_last, ui->pushButton_fill_zh,ui->pushButton_fill_fu,
@@ -68,16 +67,32 @@ pushButton_overscan pushButton_originalSize pushButton_color
 
 pushButton_chooseFile pushButton_fill_zh pushButton_fill_fu pushButton_fill_no*/
 
+    // 调整按钮大小--prettify_button
+    // 去掉按钮的名字
+    for(int i=0;i<num_btn;i++)
+    {
+        btns[i]->setText("");
+    }
+    ui->pushButton_search->setText("");// 查找没放在btns里面
 
     QWidget* mainWidget = new QWidget();
 
     // 总体垂直布局
+    /*
+    总体
+        上半部分
+            第一行
+            第二行
+            第三行
+        下半部分
+
+    */
     QVBoxLayout* mainLayout = new QVBoxLayout();
-    mainLayout->setContentsMargins(0,0,0,0); // 没变化--tmp
+    mainLayout->setContentsMargins(0,0,0,0); // 没变化--tmp--应该是设置了上下左右距离
 
     // 上半部分
     QWidget* topContainer = new QWidget();
-    topContainer->setFixedHeight(250);
+    topContainer->setFixedHeight(90);// 上半部分的高度
     topContainer->setAutoFillBackground(true);
     topContainer->setPalette(QPalette(QColor("#EEE")));
 
@@ -86,35 +101,36 @@ pushButton_chooseFile pushButton_fill_zh pushButton_fill_fu pushButton_fill_no*/
 
     // 第一行按钮
     QHBoxLayout* firstRowLayout = new QHBoxLayout();
+    // 设置布局间距为0个单位
+    firstRowLayout->setSpacing(0);
+    // 设置对齐方式为居左对齐
+    firstRowLayout->setAlignment(Qt::AlignLeft);
 
     for(int i=0; i<5; i++){
         firstRowLayout->addWidget(btns[i]);
     }
-
-    // 第二行按钮
-    QHBoxLayout* secondRowLayout = new QHBoxLayout();
+    // 分割线，美观
+    firstRowLayout->addWidget(new QFrame());
+    QFrame *line = new QFrame();
+    line->setFrameStyle(QFrame::VLine | QFrame::Sunken);
+    firstRowLayout->addWidget(line);
+    // 合并第二行
     for(int i=5; i<12; i++){
-        secondRowLayout->addWidget(btns[i]);
+        firstRowLayout->addWidget(btns[i]);
     }
 
     // 第三行按钮
     QHBoxLayout* thirdRowLayout = new QHBoxLayout();
 
-//    firstRowLayout->setSpacing(0);// 没变化--tmp
-//    secondRowLayout->setSpacing(0);
-//    thirdRowLayout->setSpacing(0);
-
-    // ui->textEdit_2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-//    ui->textEdit_2->setMaximumWidth(200);
-//    ui->textEdit_2->setMaximumHeight(50);
     QFrame *frame = new QFrame();
-    frame->setFixedSize(600, 135);
+    frame->setFixedSize(600, 50);
 
     QHBoxLayout *layout = new QHBoxLayout(frame);
     layout->addWidget(ui->pushButton_search);// 查找按钮
 
     QFrame *frame_text_edit = new QFrame();
-    frame_text_edit->setFixedSize(130, 50);
+    //frame_text_edit->setFixedSize(130, 50); 导致只能从底层往上50个距离，导致无法居中 ?
+    frame_text_edit->setMinimumSize(0, 50);
     QVBoxLayout *layout_text_edit = new QVBoxLayout(frame_text_edit);
     layout_text_edit->addWidget(ui->textEdit_2);
 
@@ -146,14 +162,9 @@ pushButton_chooseFile pushButton_fill_zh pushButton_fill_fu pushButton_fill_no*/
     thirdRowLayout->addWidget(frame);
     thirdRowLayout->addStretch();
 
-//    thirdRowLayout->addWidget(ui->pushButton_search);
-//    thirdRowLayout->addWidget(ui->textEdit_2);
-//    thirdRowLayout->addWidget(ui->label);
-//    thirdRowLayout->addWidget(ui->comboBox);
-
 
     topLayout->addLayout(firstRowLayout);
-    topLayout->addLayout(secondRowLayout);
+    // topLayout->addLayout(secondRowLayout);
     topLayout->addLayout(thirdRowLayout);
 
     // 下半部分
@@ -303,7 +314,6 @@ void MainWindow::init_parameter(){
 }
 
 
-
 //处理按钮文本与图像的样式，原32x32
 void MainWindow::prettify_button(QPushButton* button, QIcon icon){
     // QPushButton* button = ui->pushButton_back;
@@ -317,7 +327,7 @@ void MainWindow::prettify_button(QPushButton* button, QIcon icon){
                           "}");
 
     QLabel* label = new QLabel(button);
-    label->setPixmap(icon.pixmap(QSize(64, 64)));  // 调整图标的大小 32x32
+    label->setPixmap(icon.pixmap(QSize(32, 32)));  // 调整图标的大小 32x32
     label->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
 
     QVBoxLayout* layout = new QVBoxLayout(button);
@@ -328,7 +338,7 @@ void MainWindow::prettify_button(QPushButton* button, QIcon icon){
     button->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);  // 设置按钮的大小策略为在垂直方向上尽量小
 
     // 可选：调整按钮的最小尺寸
-    button->setMinimumSize(QSize(50, 135));  // 根据需要设置最小尺寸 80x80,正常 100x135
+    button->setMinimumSize(QSize(50, 50));  // 根据需要设置最小尺寸 80x80,正常 100x135
 //    button->setMaximumSize(QSize(150,150));
 }
 
@@ -440,9 +450,9 @@ void MainWindow::loadData()
     double sampleValue = 0.0;
     QVector<double>* m_ChangeData = new QVector<double>(m_nTraceLen, sampleValue);
     // 绘制进度条
-    QProgressDialog progressDialog("数据加载", "取消", 0, m_nTotalTraceNum, this);
-    progressDialog.setWindowModality(Qt::WindowModal);
-    progressDialog.setMinimumDuration(0);
+//    QProgressDialog progressDialog("数据加载", "取消", 0, m_nTotalTraceNum, this);
+//    progressDialog.setWindowModality(Qt::WindowModal);
+//    progressDialog.setMinimumDuration(0);
 
     countInline.push_back(0);
     sourcesInline.push_back(0);
@@ -456,7 +466,7 @@ void MainWindow::loadData()
 
         // 内存会被释放掉，导致没数据
         // 没啥区别，值拿到了
-        traces[i] = m_segy.GetTraceData(i+1);
+        traces[i] = m_segy.GetTraceData(i+1);// 单这一个循环下来 1.07s
 
         QVector<double>* m_ChangeData = new QVector<double>(m_nTraceLen, sampleValue);
 
@@ -489,6 +499,7 @@ void MainWindow::loadData()
                 // 1. qDebug() << "[message] taces[" << i << "][" << k << "]= " << traces[i][k];
             }
         }
+
         // qDebug() << "[Message]<LoadData> traces:" << traces[i][0];
         m_Traces.append(m_ChangeData);
     }
@@ -1078,82 +1089,41 @@ void MainWindow::waveP(){
             QColor color = QColor(Qt::black);
             QBrush brush(color);
             curve_tp->setBrush(brush);
-            curve_tp->setPen(QPen(Qt::white));
-            curve_tp->attach(ui->qwtPlot);
 
+            // 不要线条
+           //curve_tp->setPen(QPen(Qt::white));
+           //curve_tp->setPen(QPen(Qt::white, 0));
 
-            /*
-            for(int k=0;k<m_Segments.size();k++){
-                curve_tp = new QwtPlotCurve;
-                curve_tp->setSamples(m_Segments[k],m_y[k]);// x轴  y轴数据，坐标
+           curve_tp->attach(ui->qwtPlot);
 
-                // 遍历 m_Segments，根据读取到小容器的正负对该段数据填充不同的颜色
+           // 不填充那部分的线条
+           curve_tp2 = new QwtPlotCurve;
+           curve_tp2->setSamples(seg_V2, y_V2);
 
-                QVector<double> segment = m_Segments[k];
-                QColor color;
-                if (segment[1]-(i+1) > 0) {
-                    // 正数填充黑色
-                    //
-                    color = QColor(Qt::black);
-                    QBrush brush(color);
-
-                    curve_tp->setBrush(brush);
-
-                } else {
-                    // 负数填充白色
-                    //
-                    color = QColor(Qt::white);
-                    QBrush brush(color);
-                    curve_tp->setBrush(brush);
-
-                }
-                m_Colors.append(color);
-
-                //启用抗锯齿渲染模式
-                curve_tp->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-
-                // 将曲线添加到 QwtPlot 上
-                // curve_tp->attach(plot);
-                // 更换到 qwtPlot控件
-                curve_tp->attach(ui->qwtPlot);
-                m_TempDataBackup.clear();
-                //            m_y.clear();
-            }
-            */
+           curve_tp2->attach(ui->qwtPlot);
 
             break;
         }
 
-            /*  QChart 正填充
-        case 1:{// 正填充
-            QVector<double> v_px;
-            //先只跑一个线
-            //if(i <= trace_first + 3)
-            {
-                // 先不进行偏移，在plotWaveform内部分割完再偏移
-                for(k=0;k<m_Traces[i]->count();k++)
-                {
-                    m_TempValue=(*m_Traces[i])[k];
-                    // qDebug() << "[M]" << i << "--"<< k << ",m_TempValue:" << m_TempValue;
-                    m_TempValue=m_nScale*m_TempValue;  //显示波形的幅度
-                    //m_TempValue=1+i+m_TempValue; // 偏移
-                    m_TempDataBackup<<m_TempValue;
-                    // wave_amplitudes.emplace_back(m_TempValue);
-                    v_px << double(k);//给y值？
-                }
-//                qDebug() << "[MEssage]<waveP> m_TempDataBackup:" << m_TempDataBackup;
-//                qDebug() << "[Message]<waveP> m_TempDataBackup.size:" <<  m_TempDataBackup.size();
-//                qDebug() << "[Message]<waveP> v_px.size:" <<  v_px.size();
-
-                //QChart 填充绘图
-                //m_TempDataBackup 原始数据先进去再进行 +i的偏移操作！！
-                plotWaveform(chart, m_TempDataBackup, v_px, i - trace_first);
-
-            }
-            break;
-        } */
         case 2:{// 负填充
+            curve_tp = new QwtPlotCurve;
+            curve_tp->setSamples(seg_V2, y_V2);
 
+            QColor color = QColor(Qt::black);
+            QBrush brush(color);
+            curve_tp->setBrush(brush);
+
+            // 不要线条
+            //curve_tp->setPen(QPen(Qt::white));
+            //curve_tp->setPen(QPen(Qt::white, 0));
+
+            curve_tp->attach(ui->qwtPlot);
+
+            // 不填充那部分的线条
+            curve_tp2 = new QwtPlotCurve;
+            curve_tp2->setSamples(seg_V1, y_V1);
+
+            curve_tp2->attach(ui->qwtPlot);
 
             break;
         }
@@ -1671,59 +1641,73 @@ void MainWindow::on_pushButton_fill_no_clicked()
 }
 
 
-//-----------
 
-// 炮号和线号的绘制函数
- void MainWindow::waveP(int flag){
+
+
+
+// 新 炮号和线号绘制
+void MainWindow::waveP(int flag){
     QVector<int> tmpInline;
     // QVector<int> sourcesInline;
     if(flag == 1){// sourcesInline
-        tmpInline = sourcesInline;
+                tmpInline = sourcesInline;
     } else if (flag == 2){// countInline
-        tmpInline = countInline;
+                tmpInline = countInline;
     } else {
-        qDebug() << "waveP_12";
-        return;
+                qDebug() << "[ERROR] flag!=1 flag!=2 ,waveP_12";
+                return;
     }
+
+//    qDebug() << "[Message]waveP(int flag)  tmpInline:" << tmpInline;
+
+//    dasd
+//    dsa
+
+//    sa
+//    das
+
+#pragma region "test" {
+    //    ds d
+    //        sad asd
+    //        a
+    //        sada
+
+#pragma endregion }
 
     //不是最后一道绘制时
     if(trace_first!=tmpInline.at(tmpInline.size() - 2)){
-        // 更改坐标，用于zoomer返回上一步 --test
-        ui->qwtPlot->setAxisScale(QwtPlot::xBottom, trace_first, tmpInline[numInline]);
-        ui->qwtPlot->setAxisScale(QwtPlot::yLeft, 0.0, m_nTraceLen);
-        // qDebug() << "trace_first:" << trace_first;
-        // qDebug() << "countInline[numInline]" << tmpInline[numInline];
+                // 更改坐标，用于zoomer返回上一步 --test
+                ui->qwtPlot->setAxisScale(QwtPlot::xBottom, trace_first, tmpInline[numInline]);
+                ui->qwtPlot->setAxisScale(QwtPlot::yLeft, 0.0, m_nTraceLen);
+                // qDebug() << "trace_first:" << trace_first;
+                // qDebug() << "countInline[numInline]" << tmpInline[numInline];
     }
     //最后一道绘制时
     else{
-        // 更改坐标，用于zoomer返回上一步 --test
-        ui->qwtPlot->setAxisScale(QwtPlot::xBottom, trace_first, m_nTotalTraceNum);
-        ui->qwtPlot->setAxisScale(QwtPlot::yLeft, 0.0, m_nTraceLen);
+                // 更改坐标，用于zoomer返回上一步 --test
+                ui->qwtPlot->setAxisScale(QwtPlot::xBottom, trace_first, m_nTotalTraceNum);
+                ui->qwtPlot->setAxisScale(QwtPlot::yLeft, 0.0, m_nTraceLen);
     }
 
-
+    // 更改坐标，用于zoomer返回上一步 --test
+    ui->qwtPlot->setAxisScale(QwtPlot::xBottom, double(trace_first), double(trace_first) + double(x_size));
+    ui->qwtPlot->setAxisScale(QwtPlot::yLeft, 0.0, m_nTraceLen);
+    qDebug() << "trace_first:" << trace_first;
 
 
     // 初始化参数
     m_nCurrentEndianType = 0;
     m_nCurrentTraceNum = 1;
-    // 以下三者为初始化数据，经updateDataInfo 更新
-//    m_nGeophones =12; //检波器个数
-//    m_nTotalTraceNum=100;
-//    m_nTraceLen=100;
-    // absMax[100]={0}; // 没用？
 
     m_nTraceHeaderByteValue = 4;
     m_nComponent=14;
     m_nScale=1.0;
     m_nDisMode =0;
 
-    // int mode = 3;// 三种模式，1.正填充 2.负填充 3.不填充
-    // int x_size = 100; // x_size个波形 -->全局变量
+    // 计时
     QTime timedebuge;//声明一个时钟对象
     timedebuge.start();//开始计时
-
-
+    auto start = std::chrono::high_resolution_clock::now();// 另一个计时方法
 
 
     //int rectY; //放大缩小矩形框纵坐标大小
@@ -1735,424 +1719,235 @@ void MainWindow::on_pushButton_fill_no_clicked()
     QVector<double> m_TempData;
     QVector<double> vectorX3c;
     QVector<double> m_TempDataBackup;
+    // std::vector<double> wave_amplitudes;// 替代m_TempDataBackup
 
+    // 用于测试
+    //draw_mode=3;
     // 绘制前清除
     ui->qwtPlot->detachItems();
     vectorX3c.clear();
-
-    // 创建 QwtPlot 对象
-//    QwtPlot *plot = new QwtPlot();
-//    plot->setTitle("Waveform Plot");
-
-    // 创建一个 QwtPlotZoomer 对象，并将其与 QwtPlot 对象关联
-//    QwtPlotZoomer* zoomer = new QwtPlotZoomer(ui->qwtPlot->canvas());
-//    zoomer = new QwtPlotZoomer(ui->qwtPlot->canvas());
-//    zoomer->setRubberBandPen(QColor(Qt::black));
-//    zoomer->setTrackerPen(QColor(Qt::black));
-
-
-//    QList<QwtPlotCurve*> m_curveList;
-
+    //    if(draw_mode == 3 )//不填充模式 --  填充模式的x值不是与y值一一对应的
+    //    {
+    //        // 纵坐标给值
+    //        for (int i=0; i<m_nTraceLen; i++)
+    //        {
+    //            vectorX3c<<j; // vectorX3c: 0.0 1.0 2.0 ...
+    //            j+=1.0;
+    //        }
+    //    }
     for (int i=0; i<m_nTraceLen; i++)
     {
-        vectorX3c<<j; // vectorX3c: 0.0 1.0 2.0 ...
-        j+=1.0;
+                vectorX3c<<j; // vectorX3c: 0.0 1.0 2.0 ...
+                j+=1.0;
     }
 
-
-    //进度条
-
-
-     QProgressDialog progressDialog("绘制进度", "取消", trace_first, tmpInline[numInline], this);
-     progressDialog.setWindowModality(Qt::WindowModal);
-     progressDialog.setMinimumDuration(0);
-
-
-
-
+    int num_tp = 0;
     if(trace_first!=tmpInline.at(tmpInline.size() - 2)){
+                num_tp = tmpInline[numInline];
+    } else {
+                num_tp = m_nTotalTraceNum;
+    }
+     qDebug() << "[Message]waveP(int flag)  num_tp:" << num_tp;
 
-        for( i = trace_first ;i< tmpInline[numInline]; i++)
-        {
-            // 进度条
-
-            progressDialog.setValue(i);
-            // 检查用户是否点击了取消按钮
-            if (progressDialog.wasCanceled()) {
-                // 清除所有容器... --tmp
-
-                // 取消绘制操作
-                break;
-            }
-
-            // m_TempData.clear();
-
-            for(k=0;k<m_nTraceLen;k++)
-            {
-                m_TempValue=traces[i][k]; // traces[i][k];
-
-                //            qDebug()<<m_TempValue;
-                // m_TempValueBackup=traces[i][k];
+    // x_size个波形；从i= trace_first 到 trace_first + x_size
+    double index = 0;
+    for( i = trace_first ;i< num_tp; i++)
+    {
 
 
-                m_TempValue=m_nScale*m_TempValue;  //显示波形的幅度
-                m_TempValue=1+i+m_TempValue;
-                m_TempData<<m_TempValue;
-                m_TempDataBackup<<m_TempValue;
 
-            }
+                for(k=0;k<m_Traces[i]->count();k++)
+                {
+            m_TempValue=(*m_Traces[i])[k];
 
-            QVector<QVector<double>> m_Segments;
-            QVector<QVector<double>> m_y;
-            QVector<QColor> m_Colors;
+            //            qDebug()<<m_TempValue;
+            m_TempValueBackup=(*m_Traces[i])[k];
 
-            //        const double threshold = 0.0; // 分割点的阈值
 
-            // 遍历 m_TempDataBackup 中的数据
-            int start = 0;
-            for (int k = 1; k < m_TempDataBackup.size(); k++) {
-                // 判断当前数据是否与上一个数据符号相反
-                if ((m_TempDataBackup[k]-(i+1)) * (m_TempDataBackup[k-1]-(i+1)) < 0) {
-                    // 符号相反或者数据过小，认为需要分段
-                    QVector<double> segment;
-                    QVector<double> y;
+            m_TempValue=m_nScale*m_TempValue;  //显示波形的幅度
+            m_TempValue=1+i+m_TempValue;
+            m_TempData<<m_TempValue;
+            m_TempDataBackup<<m_TempValue;
 
-                    segment.append(i+1);
-                    for (int j = start; j < k; j++) {
-                        segment.append(m_TempDataBackup[j]);
-                        y.append(j+1);
-                    }
-                    y.append(k+1);
-                    y.append(k+2);
-                    segment.append(i+1);
-
-                    m_Segments.append(segment);
-                    m_y.append(y);
-                    start = k;
                 }
-            }
 
-            // 处理最后一段数据
-            if (start < m_TempDataBackup.size()) {
+
+                QVector<QVector<double>> m_Segments;
+                QVector<QVector<double>> m_y;
+                QVector<QColor> m_Colors;
+
+                //        const double threshold = 0.0; // 分割点的阈值
+
+                // 遍历 m_TempDataBackup 中的数据
+                int index_w = 0;
+                for (int k = 1; k < m_TempDataBackup.size(); k++) {
+            // 判断当前数据是否与上一个数据符号相反
+            if ((m_TempDataBackup[k]-(i+1)) * (m_TempDataBackup[k-1]-(i+1)) < 0) {
+                // 符号相反或者数据过小，认为需要分段
                 QVector<double> segment;
                 QVector<double> y;
+
                 segment.append(i+1);
-                for (int j = start; j < m_TempDataBackup.size(); j++) {
+                for (int j = index_w; j < k; j++) {
                     segment.append(m_TempDataBackup[j]);
                     y.append(j+1);
                 }
-                segment.append(i+1);
                 y.append(k+1);
                 y.append(k+2);
+                segment.append(i+1);
+
                 m_Segments.append(segment);
                 m_y.append(y);
+                index_w = k;
             }
-            switch (draw_mode){
-                case 1:{// 正填充
-                    for(int k=0;k<m_Segments.size();k++){
-                        QwtPlotCurve *curve = new QwtPlotCurve;
-                        curve->setSamples(m_Segments[k],m_y[k]);// x轴  y轴数据，坐标
-
-                        // 遍历 m_Segments，根据读取到小容器的正负对该段数据填充不同的颜色
-
-                        QVector<double> segment = m_Segments[k];
-                        QColor color;
-                        if (segment[1]-(i+1) > 0) {
-                            // 正数填充黑色
-                            //
-                            color = QColor(Qt::black);
-                            QBrush brush(color);
-
-                            curve->setBrush(brush);
-
-                        } else {
-                            // 负数填充白色
-                            //
-                            color = QColor(Qt::white);
-                            QBrush brush(color);
-                            curve->setBrush(brush);
-
-                        }
-                        m_Colors.append(color);
-
-                        //启用抗锯齿渲染模式
-                        curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-
-                        // 将曲线添加到 QwtPlot 上
-                        // curve->attach(plot);
-                        // 更换到 qwtPlot控件
-                        curve->attach(ui->qwtPlot);
-                        m_TempDataBackup.clear();
-                        //            m_y.clear();
-                    }
-                    break;
                 }
-                case 2:{// 负填充
-                    for(int k=0;k<m_Segments.size();k++){
-                        QwtPlotCurve *curve = new QwtPlotCurve;
-                        curve->setSamples(m_Segments[k],m_y[k]);// x轴  y轴数据，坐标
 
-                        // 遍历 m_Segments，根据读取到小容器的正负对该段数据填充不同的颜色
-
-                        QVector<double> segment = m_Segments[k];
-                        QColor color;
-                        if (segment[1]-(i+1) > 0) {
-                            // 正数
-                        } else {
-                            // 负数填充黑色
-                            color = QColor(Qt::black);
-                            QBrush brush(color);
-                            curve->setBrush(brush);
-                        }
-                        m_Colors.append(color);
-
-                        //启用抗锯齿渲染模式
-                        curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-
-                        // 将曲线添加到 QwtPlot 上
-                        // curve->attach(plot);
-                        // 更换到 qwtPlot控件
-                        curve->attach(ui->qwtPlot);
-                        m_TempDataBackup.clear();
-                        //            m_y.clear();
-                    }
-                    break;
-                }
-                case 3:{
-                    for(int k=0;k<m_Segments.size();k++){
-                        QwtPlotCurve *curve = new QwtPlotCurve;
-                        curve->setSamples(m_Segments[k],m_y[k]);// x轴  y轴数据，坐标
-                        curve->attach(ui->qwtPlot);
-                        m_TempDataBackup.clear();
-                    }
-
-                    break;
-                }
-                default:{
-
-                    break;
-                }
+                // 处理最后一段数据
+                if (index_w < m_TempDataBackup.size()) {
+            QVector<double> segment;
+            QVector<double> y;
+            segment.append(i+1);
+            for (int j = index_w; j < m_TempDataBackup.size(); j++) {
+                segment.append(m_TempDataBackup[j]);
+                y.append(j+1);
             }
-            // qDebug()<<"正在添加第 " << i << "道数据到plot上;  "<< "m_nTraceLen"<<"i:"<<i<<","<<m_nTraceLen;
-        }
+            segment.append(i+1);
+            y.append(k+1);
+            y.append(k+2);
+            m_Segments.append(segment);
+            m_y.append(y);
+                }
+                index_w++;
 
-    }
-    else{
-
-        for( i = trace_first ;i<m_nTotalTraceNum; i++)
-        {
-
-            // 检查用户是否点击了取消按钮
-            if (progressDialog.wasCanceled()) {
-                // 清除所有容器... --tmp
-
-                // 取消绘制操作
-                break;
-            }
-
-            // m_TempData.clear();
-
-            for(k=0;k<m_nTraceLen;k++)
+                QVector<double> seg_V1;// 正填充的curve使用
+                QVector<double> y_V1;
+                QVector<double> seg_V2;
+                QVector<double> y_V2;
+                for (int k = 0; k < m_Segments.size(); k++)
+                {
+            if (m_Segments[k][1]-(i+1) > 0)
             {
-                m_TempValue=traces[i][k];
-
-                //            qDebug()<<m_TempValue;
-                // m_TempValueBackup=traces[i][k];
-
-
-                m_TempValue=m_nScale*m_TempValue;  //显示波形的幅度
-                m_TempValue=1+i+m_TempValue;
-                m_TempData<<m_TempValue;
-                m_TempDataBackup<<m_TempValue;
+                for(int i =0 ;i<m_Segments[k].size();i++ )
+                {
+                    seg_V1.append(m_Segments[k][i]);
+                    y_V1.append(m_y[k][i]);
+                }
 
             }
-
-            QVector<QVector<double>> m_Segments;
-            QVector<QVector<double>> m_y;
-            QVector<QColor> m_Colors;
-
-            //        const double threshold = 0.0; // 分割点的阈值
-
-            // 遍历 m_TempDataBackup 中的数据
-            int start = 0;
-            for (int k = 1; k < m_TempDataBackup.size(); k++) {
-                // 判断当前数据是否与上一个数据符号相反
-                if ((m_TempDataBackup[k]-(i+1)) * (m_TempDataBackup[k-1]-(i+1)) < 0) {
-                    // 符号相反或者数据过小，认为需要分段
-                    QVector<double> segment;
-                    QVector<double> y;
-
-                    segment.append(i+1);
-                    for (int j = start; j < k; j++) {
-                        segment.append(m_TempDataBackup[j]);
-                        y.append(j+1);
-                    }
-                    y.append(k+1);
-                    y.append(k+2);
-                    segment.append(i+1);
-
-                    m_Segments.append(segment);
-                    m_y.append(y);
-                    start = k;
+            else
+            {
+                for(int i =0 ;i<m_Segments[k].size();i++ )
+                {
+                    seg_V2.append(m_Segments[k][i]);
+                    y_V2.append(m_y[k][i]);
                 }
             }
-
-            // 处理最后一段数据
-            if (start < m_TempDataBackup.size()) {
-                QVector<double> segment;
-                QVector<double> y;
-                segment.append(i+1);
-                for (int j = start; j < m_TempDataBackup.size(); j++) {
-                    segment.append(m_TempDataBackup[j]);
-                    y.append(j+1);
                 }
-                segment.append(i+1);
-                y.append(k+1);
-                y.append(k+2);
-                m_Segments.append(segment);
-                m_y.append(y);
-            }
-            switch (draw_mode){
+
+
+                switch (draw_mode){
+
                 case 1:{// 正填充
-                    for(int k=0;k<m_Segments.size();k++){
-                        QwtPlotCurve *curve = new QwtPlotCurve;
-                        curve->setSamples(m_Segments[k],m_y[k]);// x轴  y轴数据，坐标
+            curve_tp = new QwtPlotCurve;
+            curve_tp->setSamples(seg_V1, y_V1);
 
-                        // 遍历 m_Segments，根据读取到小容器的正负对该段数据填充不同的颜色
+            QColor color = QColor(Qt::black);
+            QBrush brush(color);
+            curve_tp->setBrush(brush);
 
-                        QVector<double> segment = m_Segments[k];
-                        QColor color;
-                        if (segment[1]-(i+1) > 0) {
-                            // 正数填充黑色
-                            //
-                            color = QColor(Qt::black);
-                            QBrush brush(color);
+            // 不要线条
+            //curve_tp->setPen(QPen(Qt::white));
+            //curve_tp->setPen(QPen(Qt::white, 0));
 
-                            curve->setBrush(brush);
+            curve_tp->attach(ui->qwtPlot);
 
-                        } else {
-                            // 负数填充白色
-                            //
-                            color = QColor(Qt::white);
-                            QBrush brush(color);
-                            curve->setBrush(brush);
+            // 不填充那部分的线条
+            curve_tp2 = new QwtPlotCurve;
+            curve_tp2->setSamples(seg_V2, y_V2);
 
-                        }
-                        m_Colors.append(color);
+            curve_tp2->attach(ui->qwtPlot);
 
-                        //启用抗锯齿渲染模式
-                        curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-
-                        // 将曲线添加到 QwtPlot 上
-                        // curve->attach(plot);
-                        // 更换到 qwtPlot控件
-                        curve->attach(ui->qwtPlot);
-                        m_TempDataBackup.clear();
-                        //            m_y.clear();
-                    }
-                    break;
+            break;
                 }
+
                 case 2:{// 负填充
-                    for(int k=0;k<m_Segments.size();k++){
-                        QwtPlotCurve *curve = new QwtPlotCurve;
-                        curve->setSamples(m_Segments[k],m_y[k]);// x轴  y轴数据，坐标
+            curve_tp = new QwtPlotCurve;
+            curve_tp->setSamples(seg_V2, y_V2);
 
-                        // 遍历 m_Segments，根据读取到小容器的正负对该段数据填充不同的颜色
+            QColor color = QColor(Qt::black);
+            QBrush brush(color);
+            curve_tp->setBrush(brush);
 
-                        QVector<double> segment = m_Segments[k];
-                        QColor color;
-                        if (segment[1]-(i+1) > 0) {
-                            // 正数
-                        } else {
-                            // 负数填充黑色
-                            color = QColor(Qt::black);
-                            QBrush brush(color);
-                            curve->setBrush(brush);
-                        }
-                        m_Colors.append(color);
+            // 不要线条
+            //curve_tp->setPen(QPen(Qt::white));
+            //curve_tp->setPen(QPen(Qt::white, 0));
 
-                        //启用抗锯齿渲染模式
-                        curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+            curve_tp->attach(ui->qwtPlot);
 
-                        // 将曲线添加到 QwtPlot 上
-                        // curve->attach(plot);
-                        // 更换到 qwtPlot控件
-                        curve->attach(ui->qwtPlot);
-                        m_TempDataBackup.clear();
-                        //            m_y.clear();
-                    }
-                    break;
+            // 不填充那部分的线条
+            curve_tp2 = new QwtPlotCurve;
+            curve_tp2->setSamples(seg_V1, y_V1);
+
+            curve_tp2->attach(ui->qwtPlot);
+
+            break;
                 }
-                case 3:{
-                    for(int k=0;k<m_Segments.size();k++){
-                        QwtPlotCurve *curve = new QwtPlotCurve;
-                        curve->setSamples(m_Segments[k],m_y[k]);// x轴  y轴数据，坐标
-                        curve->attach(ui->qwtPlot);
-                        m_TempDataBackup.clear();
-                    }
-
-                    break;
-                }
-                default:{
-
-                    break;
-                }
+                case 3:{// 不填充
+            // qDebug() << "[Message]<waveP>m_Traces[i]->count()" << m_Traces[i]->count();
+            // wave_amplitudes.reserve(m_Traces[i]->count());
+            for(k=0;k<m_Traces[i]->count();k++)
+            {
+                m_TempValue=(*m_Traces[i])[k];
+                // qDebug() << "[M]" << i << "--"<< k << ",m_TempValue:" << m_TempValue;
+                m_TempValue=m_nScale*m_TempValue;  //显示波形的幅度
+                m_TempValue=1+i+m_TempValue; // 偏移
+                m_TempDataBackup<<m_TempValue;
+                // wave_amplitudes.emplace_back(m_TempValue);
             }
-            // qDebug()<<"正在添加第 " << i << "道数据到plot上;  "<< "m_nTraceLen"<<"i:"<<i<<","<<m_nTraceLen;
-        }
 
+            QwtPlotCurve *curve = new QwtPlotCurve();
+            curve->setSamples(m_TempDataBackup,vectorX3c);// x轴  y轴数据，坐标
+            curve->attach(ui->qwtPlot);
+            break;
+                }
+                default:
+            qDebug() << "[WARNING] draw_mode 不为1，2，3";
+            break;
+                }
+                //qDebug() << m_TempDataBackup;
+                //        qDebug() << "[Message]m_TempDataBackup[0]:" << m_TempDataBackup.at(0)
+                //                 << ",wave_amplitudes[0]:" << wave_amplitudes[0];
+
+                // 数据清理
+                // vectorX3c 数据是不用动的，是固定的，不需要clear
+                m_TempDataBackup.clear();
+                //wave_amplitudes.clear();
     }
+    //qDebug() << "[Message]<waveP()><for( i = trace_first ;i< trace_first + x_size; i++)>Elapsed time:" << elapsed_str << " seconds";
 
-
-    // 绘制完成后隐藏进度条
-    progressDialog.hide();
-
-
-    QwtText xTitle = ui->qwtPlot->axisTitle(QwtPlot::xBottom);
-    QFont font("Arial", 12);
-    xTitle.setFont(font);
-    xTitle.setText("Trace");
-    QwtText yTitle = ui->qwtPlot->axisTitle(QwtPlot::yLeft);
-    yTitle.setFont(font);
-    yTitle.setText("Time");
-
-    // 更新坐标轴标题
-    ui->qwtPlot->setAxisTitle(QwtPlot::xBottom, xTitle);
-    ui->qwtPlot->setAxisTitle(QwtPlot::yLeft, yTitle);
-
-    QString collectValues = QString("Source / CMP Line: %1").arg(numInline);
-
-    ui->qwtPlot->setFooter(collectValues);
-
+    // 用于缩放
     fun_for_zommer();
 
-    //第一道集数据
-    if(numInline==1){
-        // 设置 x 轴和 y 轴范围
-        ui->qwtPlot->setAxisScale(QwtPlot::xBottom, 0.0, tmpInline[numInline]);
-        ui->qwtPlot->setAxisScale(QwtPlot::yLeft, 0.0, m_nTraceLen);
-
-    }
-
-    else if(numInline == tmpInline.size()-1){
-                // 设置 x 轴和 y 轴范围
-                ui->qwtPlot->setAxisScale(QwtPlot::xBottom, trace_first, tmpInline[numInline]);
-                ui->qwtPlot->setAxisScale(QwtPlot::yLeft, 0.0, m_nTraceLen);
-         }
-
-
-
-
-
-
-
+    // 设置 x 轴和 y 轴范围
+    ui->qwtPlot->setAxisScale(QwtPlot::xBottom, double(trace_first), double(num_tp));
+    ui->qwtPlot->setAxisScale(QwtPlot::yLeft, 0.0, m_nTraceLen);
+    //    ui->qwtPlot->setAxisScale(QwtPlot::xBottom, 0, 100);
+    //    ui->qwtPlot->setAxisScale(QwtPlot::yLeft, -1,1);
     // 重新绘制图形
     ui->qwtPlot->replot();
 
+
+
+    // 清理数据
     // clearData(); 数据还能用到
 
-    qDebug() << "wave over--";
-    qDebug()<<"[Message]<waveP(int)>程序耗时："<<timedebuge.elapsed()/1000.0<<"s";//输出计时
+    // 计时
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    double elapsed = duration.count() * 1e-6; // microseconds to seconds
+    QString elapsed_str = QString::number(elapsed, 'f', 5); // 精确到5位小数
+    qDebug() << "[Message]<waveP()><绘图>Elapsed time:" << elapsed_str << " seconds";
+    qDebug()<<"[Message]<waveP()>程序耗时："<<timedebuge.elapsed()/1000.0<<"s";//输出计时
 }
 
 
