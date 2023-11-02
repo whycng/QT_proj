@@ -2,7 +2,7 @@
 
 #include "ui_mainwindow.h"
 #include <chrono>
-
+#include "src/canvas.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -10,8 +10,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-
-
+    // 按理说新的按钮或者组件都应该在构造函数里初始化
+    // 工区底图按钮
+    btn_workArea = new QPushButton(this);
 
     // 参数初始化
     init_parameter();
@@ -25,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_zoomer = nullptr;
     icon_file_path = "";
 
-// 测试
+    // 测试
     // 初始化为10
     ui->comboBox->setCurrentIndex(0);
 
@@ -40,6 +41,18 @@ MainWindow::MainWindow(QWidget *parent)
     ui->comboBox->update();
 
     qDebug() << "after update: " << ui->comboBox->currentText();
+
+
+
+    // 槽函数设置
+    connect(radioBtn1, &QRadioButton::clicked, this, &MainWindow::onRadioBtn1Clicked);
+
+    connect(radioBtn2, &QRadioButton::clicked, this, &MainWindow::onRadioBtn2Clicked);
+
+    connect(radioBtn3, &QRadioButton::clicked, this, &MainWindow::onRadioBtn3Clicked);
+
+    // 工区底图
+    connect(btn_workArea, &QPushButton::clicked, this, &MainWindow::onQPushBtnClicked_workArea);
 
 
 
@@ -118,6 +131,7 @@ pushButton_chooseFile pushButton_fill_zh pushButton_fill_fu pushButton_fill_no*/
     for(int i=5; i<12; i++){
         firstRowLayout->addWidget(btns[i]);
     }
+    firstRowLayout->addWidget(btn_workArea);
 
     // 第三行按钮
     QHBoxLayout* thirdRowLayout = new QHBoxLayout();
@@ -191,12 +205,15 @@ pushButton_chooseFile pushButton_fill_zh pushButton_fill_fu pushButton_fill_no*/
     setCentralWidget(mainWidget);
 
     //----------------------
-    // 槽函数设置
-    connect(radioBtn1, &QRadioButton::clicked, this, &MainWindow::onRadioBtn1Clicked);
+//    // 槽函数设置
+//    connect(radioBtn1, &QRadioButton::clicked, this, &MainWindow::onRadioBtn1Clicked);
 
-    connect(radioBtn2, &QRadioButton::clicked, this, &MainWindow::onRadioBtn2Clicked);
+//    connect(radioBtn2, &QRadioButton::clicked, this, &MainWindow::onRadioBtn2Clicked);
 
-    connect(radioBtn3, &QRadioButton::clicked, this, &MainWindow::onRadioBtn3Clicked);
+//    connect(radioBtn3, &QRadioButton::clicked, this, &MainWindow::onRadioBtn3Clicked);
+
+//    // 工区底图
+//    connect(radioBtn3, &QRadioButton::clicked, this, &MainWindow::onRadioBtn3Clicked);
 }
 
 // 检测哪个被选中
@@ -401,15 +418,18 @@ void MainWindow::init_icon(){
 
     icon = QIcon(t + "fill_zh.png");
     prettify_button(ui->pushButton_fill_zh,icon);
-    // ui->pushButton_chooseFile->setIcon(icon);
 
     icon = QIcon(t + "fill_fu.png");
     prettify_button(ui->pushButton_fill_fu,icon);
-    // ui->pushButton_chooseFile->setIcon(icon);
 
     icon = QIcon(t + "fill_no.png");
     prettify_button(ui->pushButton_fill_no,icon);
-    // ui->pushButton_chooseFile->setIcon(icon);
+
+    // 工区底图
+    icon = QIcon(t + "workArea.png");
+    prettify_button(btn_workArea,icon);
+
+
 }
 
 void MainWindow::init_text(){
@@ -430,23 +450,27 @@ void MainWindow::init_text(){
 // 加载数据
 void MainWindow::loadData()
 {
-    num_line = 0;
-    // 查看线号，道号 VOLUMEHEADER &ReadVolumeHeader();
-    int lino = m_segy.GetVolumeHeader().lino;
-    int reno = m_segy.GetVolumeHeader().reno;// 卷号
-    short ntrpr = m_segy.GetVolumeHeader().ntrpr;
-    unsigned short hns = m_segy.GetVolumeHeader().hns;
-    qDebug() << "[Message]1. lino线号：" << lino
-        << ",reno卷号：" << reno
-        << ",ntrpr:" << ntrpr
-        << ",hns:" << hns;
+
+
+//    // 查看线号，道号 VOLUMEHEADER &ReadVolumeHeader();
+//    int lino = m_segy.GetVolumeHeader().lino;
+//    int reno = m_segy.GetVolumeHeader().reno;// 卷号
+//    short ntrpr = m_segy.GetVolumeHeader().ntrpr;
+//    unsigned short hns = m_segy.GetVolumeHeader().hns;
+//    qDebug() << "[Message]1. lino线号：" << lino
+//        << ",reno卷号：" << reno
+//        << ",ntrpr:" << ntrpr
+//        << ",hns:" << hns;
 //    数据一样的
-//    VOLUMEHEADER volumeHeader = m_segy.ReadVolumeHeader();
+    // 用于拿到 线数，道数。
+    VOLUMEHEADER volumeHeader = m_segy.ReadVolumeHeader();
 //    qDebug() << "[Message]2. lino线号：" << volumeHeader.lino
 //        << ",reno卷号：" << volumeHeader.reno
 //        << ",ntrpr:" << volumeHeader.ntrpr
 //        << ",hns:" << volumeHeader.hns;
+//    TRACEHEADER traceHeader;
 
+    num_line = 0;// 用于计算cmp
     double sampleValue = 0.0;
     QVector<double>* m_ChangeData = new QVector<double>(m_nTraceLen, sampleValue);
     // 绘制进度条
@@ -461,6 +485,16 @@ void MainWindow::loadData()
     traces = (float**)alloca(m_nTotalTraceNum * sizeof(float*));
     for (int i=0; i<m_nTotalTraceNum; i++) // m_nTotalTraceNum -> m_nTraceLen
     {
+        // 查看inline crossline
+//        if(i < 50)
+//        {
+//            traceHeader = m_segy.ReadTraceHeader(i);
+//            qDebug() << "[Message]traceHeader.Inline3D" << traceHeader.Inline3D
+//                     << "     traceHeader.CrossLine3D" << traceHeader.CrossLine3D;
+
+//        }
+
+
         // 进度 170mb的数据，啥也不做，跑完循环6s;正常7s
 
 
@@ -518,6 +552,12 @@ void MainWindow::loadData()
     {
         qDebug() << "[Warning] 循环得出的线号和卷头文件给的线号不同";
     }
+
+
+    qDebug() << "[Message]m_nInLineNum" << m_segy.GetInLineNum()
+             << "[Message]m_nXLineNum"<< m_segy.GetXLineNum();
+    inLineNum = m_segy.GetInLineNum();
+    xLineNum = m_segy.GetXLineNum();
 
     //拿到数据
 //    for(int i=0;i<100;i++)
@@ -630,7 +670,7 @@ void MainWindow::load_wave_data(){
     // qDebug() << "[Message]Elapsed time: " << duration.count()   << " microseconds";
 
 }
-
+#pragma region "主要绘图" {
 // 原始绘图
 void MainWindow::waveP_first(){
 
@@ -924,12 +964,8 @@ void MainWindow::waveP_first(){
     qDebug()<<"[Message]<waveP first()>程序耗时："<<timedebuge.elapsed()/1000.0<<"s";//输出计时
 }
 
-
-
 // 绘制函数 改
 void MainWindow::waveP(){
-
-
     // 更改坐标，用于zoomer返回上一步 --test
     ui->qwtPlot->setAxisScale(QwtPlot::xBottom, double(trace_first), double(trace_first) + double(x_size));
     ui->qwtPlot->setAxisScale(QwtPlot::yLeft, 0.0, m_nTraceLen);
@@ -967,30 +1003,16 @@ void MainWindow::waveP(){
     // 绘制前清除
     ui->qwtPlot->detachItems();
     vectorX3c.clear();
-//    if(draw_mode == 3 )//不填充模式 --  填充模式的x值不是与y值一一对应的
-//    {
-//        // 纵坐标给值
-//        for (int i=0; i<m_nTraceLen; i++)
-//        {
-//            vectorX3c<<j; // vectorX3c: 0.0 1.0 2.0 ...
-//            j+=1.0;
-//        }
-//    }
     for (int i=0; i<m_nTraceLen; i++)
     {
         vectorX3c<<j; // vectorX3c: 0.0 1.0 2.0 ...
         j+=1.0;
     }
 
-
-
     // x_size个波形；从i= trace_first 到 trace_first + x_size
-    double index = 0;
+    // double index = 0;
     for( i = trace_first ;i< trace_first + x_size; i++)
     {
-
-
-
         for(k=0;k<m_Traces[i]->count();k++)
         {
             m_TempValue=(*m_Traces[i])[k];
@@ -1196,9 +1218,9 @@ void MainWindow::waveP(){
     qDebug() << "[Message]<waveP()><绘图>Elapsed time:" << elapsed_str << " seconds";
     qDebug()<<"[Message]<waveP()>程序耗时："<<timedebuge.elapsed()/1000.0<<"s";//输出计时
 }
+#pragma endregion }
 
-
-
+#pragma region "折叠" {
 // 选择文件 sgy文件
 void MainWindow::on_pushButton_chooseFile_clicked()
 {
@@ -1376,41 +1398,7 @@ void MainWindow::fun_for_zommer(){
     m_zoomer->yMax = qwtPlot_scale[3];
     m_zoomer->z_qwtPlot = ui->qwtPlot;
 
-    /*
-    // 更改坐标，用于zoomer返回上一步 --test
-//    ui->qwtPlot->setAxisScale(QwtPlot::xBottom, double(trace_first), double(trace_first) + double(x_size));
-//    ui->qwtPlot->setAxisScale(QwtPlot::yLeft, 0.0, m_nTraceLen); //
-//    zoomer = new QwtPlotZoomer(ui->qwtPlot->canvas());
-//    zoomer->setZoomBase();
-//    zoomer->setRubberBandPen(QColor(Qt::black));
-//    zoomer->setTrackerPen(QColor(Qt::black));
 
-    double xMin = trace_first;
-    double xMax = trace_first + x_size;
-    double yMin = 0.0;
-    double yMax = m_nTraceLen;
-
-    ui->qwtPlot->setAxisScale(QwtPlot::xBottom, xMin, xMax);
-    ui->qwtPlot->setAxisScale(QwtPlot::yLeft, yMin, yMax);
-
-    zoomer = new QwtPlotZoomer(ui->qwtPlot->canvas());
-
-//    QwtScaleMap xScaleMap = ui->qwtPlot->canvasMap(QwtPlot::xBottom);
-//    QwtScaleMap yScaleMap = ui->qwtPlot->canvasMap(QwtPlot::yLeft);
-//    QRectF zoomBaseRect(xMin, yMin, xMax - xMin, yMax - yMin);
-//    zoomer->setZoomBase(zoomBaseRect);
-
-    // QRectF zoomBaseRect(xMin, yMin, xMax - xMin, yMax - yMin);
-    // qDebug() << "zoomBaseRect: " << zoomBaseRect;
-//    zoomer->setZoomBase(zoomBaseRect);
-
-    // zoomer->setZoomBase(ui->qwtPlot->canvas()->rect()); // 将初始大小设置为 canvas 的大小
-    // qDebug() << "Canvas Rect: " << ui->qwtPlot->canvas()->rect();// 发现rect是画布大小  Canvas Rect:  QRect(0,0 370x363)
-    qDebug() << "xMin:" << xMin << "  xMax:" << xMax;
-
-    zoomer->setRubberBandPen(QColor(Qt::black));
-    zoomer->setTrackerPen(QColor(Qt::black));
-*/
 }
 
 // 第一个
@@ -1641,10 +1629,6 @@ void MainWindow::on_pushButton_fill_no_clicked()
 }
 
 
-
-
-
-
 // 新 炮号和线号绘制
 void MainWindow::waveP(int flag){
     QVector<int> tmpInline;
@@ -1726,15 +1710,6 @@ void MainWindow::waveP(int flag){
     // 绘制前清除
     ui->qwtPlot->detachItems();
     vectorX3c.clear();
-    //    if(draw_mode == 3 )//不填充模式 --  填充模式的x值不是与y值一一对应的
-    //    {
-    //        // 纵坐标给值
-    //        for (int i=0; i<m_nTraceLen; i++)
-    //        {
-    //            vectorX3c<<j; // vectorX3c: 0.0 1.0 2.0 ...
-    //            j+=1.0;
-    //        }
-    //    }
     for (int i=0; i<m_nTraceLen; i++)
     {
                 vectorX3c<<j; // vectorX3c: 0.0 1.0 2.0 ...
@@ -1946,8 +1921,8 @@ void MainWindow::waveP(int flag){
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     double elapsed = duration.count() * 1e-6; // microseconds to seconds
     QString elapsed_str = QString::number(elapsed, 'f', 5); // 精确到5位小数
-    qDebug() << "[Message]<waveP()><绘图>Elapsed time:" << elapsed_str << " seconds";
-    qDebug()<<"[Message]<waveP()>程序耗时："<<timedebuge.elapsed()/1000.0<<"s";//输出计时
+    qDebug() << "[Message]<waveP(int flag)><绘图>Elapsed time:" << elapsed_str << " seconds";
+    qDebug()<<"[Message]<waveP(int flag)>程序耗时："<<timedebuge.elapsed()/1000.0<<"s";//输出计时
 }
 
 
@@ -2092,5 +2067,61 @@ void MainWindow::waveP(int flag){
     }
 
  }
+#pragma endregion }
 
+ // 工区底图
+ void MainWindow::onQPushBtnClicked_workArea()
+ {
+    //--tmp 测试
+    inLineNum = 215;
+    xLineNum = 120;
 
+    // 首先判断 线号道号存在
+    if (inLineNum != 0 && xLineNum !=0 )
+    {
+        ParCanvas parCan = {
+            inLineNum,
+            xLineNum
+        };
+        // 测试，直接画
+        Canvas* w = new Canvas(parCan);
+        connect(w, SIGNAL(test(QVector<QPoint>)),
+                this, SLOT(handleCanvasButton(QVector<QPoint>)));
+        connect(w, SIGNAL(test2()),
+                this, SLOT(handleCanvasButton2()));
+        connect(w, SIGNAL(test3(int)),
+                this, SLOT(handleCanvasButton3(int)));
+        //这样不行
+//        connect(w, SIGNAL(todo_ButtonDownClicked()),
+//                this, SLOT(handleCanvasButton()));
+        // 不行
+//        connect(w, SIGNAL(onButtonDownClicked()),
+//                this, SLOT(handleCanvasButton()));
+        //这样可以
+//        connect(w->buttonDown, SIGNAL(clicked()),
+//                this, SLOT(handleCanvasButton()));
+
+        w->show();
+
+     }
+    else
+    {
+        qDebug() << "[Warning] <onQPushBtnClicked_workArea>线数为0 或者道数为0 ";
+    }
+
+ }
+
+void MainWindow::handleCanvasButton(QVector<QPoint> points){
+
+    qDebug() << "[test] 111?？？？ " << points.size();
+}
+
+void MainWindow::handleCanvasButton2(){
+
+    qDebug() << "[test] <handleCanvasButton2>  test "  ;
+}
+
+void MainWindow::handleCanvasButton3(int num){
+
+    qDebug() << "[test] <handleCanvasButton3>num: " << num  ;
+}

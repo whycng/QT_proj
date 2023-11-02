@@ -160,7 +160,7 @@ struct TRACEHEADER
     int cdpX; //181-184 CDP道X坐标
     int cdpY;//185-188 CDP道Y坐标
     int Inline3D;//189-192  三维地震测线号
-    int CrossLine3D;//193-196 三维地震道号
+    int CrossLine3D;//193-196 三维地震道号 ----------------------------------！！--------------
     int ShotPoint;//197-200 炮点号，可能只适用于二维地震
     short ShotPointScalar;//201-202 炮点标量，与197-200相关
     short TraceValueMeasurementUnit;
@@ -294,8 +294,9 @@ public:
         void closeFile();
         void SetNewTextualHeader ();
         void WriteSegy(const char *csReadFile, const char *csWriteFile);
-    
-    
+
+        int GetInLineNum();//拿到线数
+        int GetXLineNum();//拿到道数
     
         //char m_csFilepath[300];//文件路径
     public:

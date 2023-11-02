@@ -62,6 +62,16 @@ CSegyRead::~CSegyRead()
         delete []m_pszData;
 }
 
+
+int CSegyRead::GetInLineNum() //拿到线数
+{
+    return m_nInLineNum;
+}
+int CSegyRead::GetXLineNum()//拿到道数
+{
+    return m_nXLineNum;
+}
+
 CSegyRead::CSegyRead(char *csSgyParth)
 {
 

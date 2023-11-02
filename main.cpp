@@ -40,6 +40,9 @@
 #include "csegyread.h"
 #include "util.h"
 #include "Zoomer.h"
+#include "src/canvas.h"
+
+
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -342,6 +345,10 @@ int main(int argc, char *argv[])
     w.setWindowState(Qt::WindowMaximized);
     w.show();
 
+    // 测试 Canvas
+//    Canvas* w = new Canvas;
+//    //w->resize(800, 600);
+//    w->show();
 
     // 测试 curve
 //    QVector<double> x_data = {1,2,3,7,8,9,   7,  1};

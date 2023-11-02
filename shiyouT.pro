@@ -20,6 +20,8 @@ SOURCES += \
     icontextbutton.cpp \
     main.cpp \
     mainwindow.cpp \
+    src/canvas.cpp \
+    src/dataProcess/dataProcess.cpp \
     src/testExample/testQChart.cpp \
     util.cpp \
     zoomer.cpp
@@ -29,6 +31,8 @@ HEADERS += \
     csegyread.h \
     icontextbutton.h \
     mainwindow.h \
+    src/canvas.h \
+    src/dataProcess/dataProcess.h \
     src/testExample/testQChart.h \
     util.h
 

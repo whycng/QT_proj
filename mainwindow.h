@@ -23,6 +23,7 @@
 #include "Zoomer.h"
 #include <QVBoxLayout>
 #include <QRadioButton>
+#include <QPoint>
 
 #include <QtCharts/QAreaSeries>
 #include "src/testExample/testQChart.h"
@@ -46,6 +47,9 @@ public:
 //    QtCharts::QChart *chart;
 //    QtCharts::QChartView *chartView;
 
+    // 线数，道数
+    int inLineNum;
+    int xLineNum;
 
     // qwt
     CSegyRead m_segy;
@@ -109,6 +113,8 @@ public:
     QRadioButton *radioBtn2; // = new QRadioButton();
     QRadioButton *radioBtn3;// = new QRadioButton();
 
+    QPushButton* btn_workArea;// 工区底图
+
 
     // 函数
     int radio_button_checked();
@@ -141,10 +147,18 @@ public:
     void layout_process();// 布局处理
     QFrame* layoutButtons(QVector<QPushButton*> buttons);
     void icon_gray(int i);
+public slots:
+    void handleCanvasButton(QVector<QPoint> points);// 连接处理Canvas
+    void handleCanvasButton2();
+    void handleCanvasButton3(int num);
 private slots:
+
+
     void onRadioBtn1Clicked();
     void onRadioBtn2Clicked();
     void onRadioBtn3Clicked();
+
+    void onQPushBtnClicked_workArea();
 
     void on_pushButton_chooseFile_clicked();
 
