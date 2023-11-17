@@ -94,8 +94,8 @@ void Canvas::onButtonDownClicked()//确认
     }
     qDebug() << "[Message]<onButtonDownClicked>pointNum:" << real_points.size();
     emit test(real_points);
-    emit test2();
-    emit test3(56);
+//    emit test2();
+//    emit test3(56);
 
     #pragma region "通过线取点-不好" {
 /*

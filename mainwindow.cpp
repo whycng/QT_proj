@@ -2072,7 +2072,7 @@ void MainWindow::waveP(int flag){
  // 工区底图
  void MainWindow::onQPushBtnClicked_workArea()
  {
-    //--tmp 测试
+    //--tmp 测试 ,这两个数据均为类成员变量
     inLineNum = 215;
     xLineNum = 120;
 
@@ -2085,12 +2085,14 @@ void MainWindow::waveP(int flag){
         };
         // 测试，直接画
         Canvas* w = new Canvas(parCan);
+        //槽函数处理，绘制完毕点击确认，触发
         connect(w, SIGNAL(test(QVector<QPoint>)),
                 this, SLOT(handleCanvasButton(QVector<QPoint>)));
-        connect(w, SIGNAL(test2()),
-                this, SLOT(handleCanvasButton2()));
-        connect(w, SIGNAL(test3(int)),
-                this, SLOT(handleCanvasButton3(int)));
+        // 这样可以
+//        connect(w, SIGNAL(test2()),
+//                this, SLOT(handleCanvasButton2()));
+//        connect(w, SIGNAL(test3(int)),
+//                this, SLOT(handleCanvasButton3(int)));
         //这样不行
 //        connect(w, SIGNAL(todo_ButtonDownClicked()),
 //                this, SLOT(handleCanvasButton()));
@@ -2112,16 +2114,18 @@ void MainWindow::waveP(int flag){
  }
 
 void MainWindow::handleCanvasButton(QVector<QPoint> points){
+    // 已经拿到数据
+    qDebug() << "[test] handleCanvasButton points.size(): " << points.size();
 
-    qDebug() << "[test] 111?？？？ " << points.size();
+
 }
 
-void MainWindow::handleCanvasButton2(){
+//void MainWindow::handleCanvasButton2(){
 
-    qDebug() << "[test] <handleCanvasButton2>  test "  ;
-}
+//    qDebug() << "[test] <handleCanvasButton2>  test "  ;
+//}
 
-void MainWindow::handleCanvasButton3(int num){
+//void MainWindow::handleCanvasButton3(int num){
 
-    qDebug() << "[test] <handleCanvasButton3>num: " << num  ;
-}
+//    qDebug() << "[test] <handleCanvasButton3>num: " << num  ;
+//}

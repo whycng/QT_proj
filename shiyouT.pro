@@ -22,6 +22,7 @@ SOURCES += \
     mainwindow.cpp \
     src/canvas.cpp \
     src/dataProcess/dataProcess.cpp \
+    src/process3D.cpp \
     src/testExample/testQChart.cpp \
     util.cpp \
     zoomer.cpp
@@ -33,6 +34,7 @@ HEADERS += \
     mainwindow.h \
     src/canvas.h \
     src/dataProcess/dataProcess.h \
+    src/process3D.h \
     src/testExample/testQChart.h \
     util.h
 

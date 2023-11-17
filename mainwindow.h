@@ -149,8 +149,8 @@ public:
     void icon_gray(int i);
 public slots:
     void handleCanvasButton(QVector<QPoint> points);// 连接处理Canvas
-    void handleCanvasButton2();
-    void handleCanvasButton3(int num);
+//    void handleCanvasButton2();
+//    void handleCanvasButton3(int num);
 private slots:
 
 

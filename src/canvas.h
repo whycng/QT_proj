@@ -23,8 +23,8 @@ slots:
     void onButtonDownClicked();
 signals:
     void test(QVector<QPoint> real_points);
-    void test2();
-    void test3(int x);
+//    void test2();
+//    void test3(int x);
 public:
     Canvas(ParCanvas parCanvas,QWidget *parent = nullptr);
     QPushButton* buttonDown; // 按钮，确定
